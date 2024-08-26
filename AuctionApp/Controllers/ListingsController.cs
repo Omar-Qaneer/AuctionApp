@@ -30,23 +30,21 @@ namespace AuctionApp.Controllers
         }
 
         // GET: Listings/Details/5
-        //public async task<iactionresult> details(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return notfound();
-        //    }
+        public async Task<IActionResult> Details(int? itemid)
+        {
+            if (itemid == null)
+            {
+                return NotFound();
+            }
 
-        //    var listing = await _context.listings
-        //        .include(l => l.user)
-        //        .firstordefaultasync(m => m.id == id);
-        //    if (listing == null)
-        //    {
-        //        return notfound();
-        //    }
+            var listing = await _listingsService.GetById(itemid);
+            if (listing == null)
+            {
+                return NotFound();
+            }
 
-        //    return view(listing);
-        //}
+            return View(listing);
+        }
 
         // get: listings/create
         public IActionResult create()
