@@ -14,12 +14,14 @@ namespace AuctionApp.Controllers
     public class ListingsController : Controller
     {
         private readonly IListingsService _listingsService;
+        private readonly IBidsService _bidsService;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ListingsController(IListingsService listingsService, IWebHostEnvironment webHostEnvironment)
+        public ListingsController(IListingsService listingsService, IWebHostEnvironment webHostEnvironment, IBidsService bidsService)
         {
             _listingsService = listingsService;
             _webHostEnvironment = webHostEnvironment;
+            _bidsService = bidsService;
         }
 
         // GET: Listings
@@ -34,7 +36,7 @@ namespace AuctionApp.Controllers
                 return View(await PaginatedList<Listing>.CreateAsync(applicationDbContext.Where(l => l.IsSold == false).AsNoTracking(), pageNumber ?? 1, pageSize));
             }
 
-            return View(await PaginatedList<Listing>.CreateAsync(applicationDbContext.Where(l => l.IsSold == false).AsNoTracking(), pageNumber ?? 1, pageSize));
+            return View(await PaginatedList<Listing>.CreateAsync(applicationDbContext/*.Where(l => l.IsSold == false)*/.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Listings/Details/5
@@ -89,6 +91,27 @@ namespace AuctionApp.Controllers
                 return RedirectToAction("Index");
             }
             return View(listing);
+        }
+        [HttpPost]
+        public async Task<ActionResult> AddBid([Bind("Id, Price, ListingId, IdentityUserId")] Bid bid)
+        {
+            if (ModelState.IsValid)
+            {
+                await _bidsService.Add(bid);
+            }
+            var listing = await _listingsService.GetById(bid.ListingId);
+            listing.Price = bid.Price;
+            await _listingsService.SaveChanges();
+
+            return View("Details", listing);
+        }
+
+        public async Task<ActionResult> CloseBidding(int id)
+        {
+            var listing = await _listingsService.GetById(id);
+            listing.IsSold = true;
+            await _listingsService.SaveChanges();
+            return View("Details", listing);
         }
 
         //// get: listings/edit/5
