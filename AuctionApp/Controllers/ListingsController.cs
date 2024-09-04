@@ -51,6 +51,15 @@ namespace AuctionApp.Controllers
             return View("Index", await PaginatedList<Listing>.CreateAsync(applicationDbContext.Where(l => l.IdentityUserId == User.FindFirstValue(ClaimTypes.NameIdentifier)).AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
+        public async Task<IActionResult> MyBids(int? pageNumber)
+        {
+            var applicationDbContext = _bidsService.GetAll();
+
+            int pageSize = 3;
+
+            return View( await PaginatedList<Bid>.CreateAsync(applicationDbContext.Where(l => l.IdentityUserId == User.FindFirstValue(ClaimTypes.NameIdentifier)).AsNoTracking(), pageNumber ?? 1, pageSize));
+        }
+
         // GET: Listings/Details/5
         public async Task<IActionResult> Details(int? itemid)
         {
